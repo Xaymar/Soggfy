@@ -162,6 +162,7 @@ export default class PlayerStateTracker {
     private async getTrackMetaProps(track: TrackInfo) {
         let meta = track.metadata;
         let extraMeta = await Resources.getTrackMetadataWG(track.uri);
+        let analysisMeta = await Resources.getTrackAnalysisWG(track.uri);
 
         let { year, month, day } = extraMeta.album.date;
         let date = [year, month, day];
@@ -173,7 +174,7 @@ export default class PlayerStateTracker {
             title:          meta.title,
             album_artist:   meta.artist_name,
             album:          meta.album_title,
-            artist:         extraMeta.artist.map(v => v.name).join("/"),
+            artist:         extraMeta.artist.map(v => v.name).join(", "),
             track:          meta.album_track_number,
             totaltracks:    meta.album_track_count,
             disc:           meta.album_disc_number,
@@ -182,8 +183,9 @@ export default class PlayerStateTracker {
             publisher:      extraMeta.album.label,
             language:       extraMeta.language_of_performance?.[0],
             isrc:           extraMeta.external_id?.find(v => v.type === "isrc")?.id,
-            comment:        Resources.getOpenTrackURL(track.uri),
-            explicit:       meta.is_explicit ? "1" : undefined
+            url:            Resources.getOpenTrackURL(track.url),
+            explicit:       meta.is_explicit ? "1" : undefined,
+            comment:        JSON.stringify({playerMeta: meta, meta: extraMeta})
         };
     }
     private async getPodcastMetaProps(track: TrackInfo) {
@@ -199,9 +201,10 @@ export default class PlayerStateTracker {
             publisher:      meta.show.publisher,
             date:           meta.release_date,
             language:       meta.language,
-            comment:        Resources.getOpenTrackURL(track.uri),
+            url:            Resources.getOpenTrackURL(track.url),
             podcast:        "1",
-            explicit:       meta.explicit ? "1" : undefined
+            explicit:       meta.explicit ? "1" : undefined,
+            comment:        JSON.stringify({playerMeta: meta, meta: extraMeta})
         };
     }
     private async getLyrics(track: TrackInfo) {
